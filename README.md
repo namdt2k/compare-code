@@ -1,1 +1,1 @@
-# compare-code
+Đây là project định hướng về level reactJs hiện tại

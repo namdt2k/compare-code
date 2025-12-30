@@ -1,0 +1,72 @@
+1. Derived State là gì?
+    - Derived State là state được tính toán từ state khác nhưng vẫn bị lưu riêng.  
+        Vi phạm SSOT vì:
+            Có nhiều hơn 1 nguồn dữ liệu
+            Phải sync thủ công
+            Dễ lệch dữ liệu
+        Không lưu state cho những dữ liệu có thể suy ra từ state khác (Mỗi dữ liệu trong ứng dụng chỉ nên có một nơi 
+        duy nhất chịu trách nhiệm thay đổi nó.)
+        Nếu bạn thấy mình phải:
+            sync state bằng useEffect
+            setState cho cùng 1 dữ liệu ở nhiều nơi
+            → rất có thể bạn đang vi phạm Single Source of Truth.
+        Derived State là nguyên nhân gây bug
+            Derived State là dữ liệu: 
+                không được người dùng nhập trực tiếp 
+                mà được tính toán từ state khác
+            Việc lưu nó vào state sẽ dẫn đến:
+                2 nguồn dữ liệu cho cùng 1 ý nghĩa
+                phải đồng bộ thủ công
+                dễ quên cập nhật → lệch UI
+2.State Ownership (Ai là chủ dữ liệu?)
+    - State thuộc về component cao nhất cần nó
+    - Component con:
+        Nhận qua props
+        Phát event ngược lên
+    👉 Đây là cốt lõi của one-way data flow.
+3. Sync state = dấu hiệu sai thiết kế
+    Khi bạn viết:
+        useEffect(() => {
+        setSomething(fromOtherState);
+        }, [otherState]);
+    → gần như chắc chắn: something không nên là state
+
+
+VD: 
+Ví dụ 1: Derived state sai.
+    const [items, setItems] = useState([]);
+    const [total, setTotal] = useState(0);
+
+    useEffect(() => {
+    setTotal(items.length);
+    }, [items]);
+    
+    Phân tích
+        total hoàn toàn phụ thuộc vào items
+        có 2 nguồn dữ liệu:items, total
+        Nếu logic phức tạp hơn → bug rất khó tìm
+    Sửa lại: 
+    const [items, setItems] = useState([]);
+    const total = items.length;
+Ví dụ 2: Copy props → state
+    function Child({ value }) {
+        const [localValue, setLocalValue] = useState(value);
+        return <p>{localValue}</p>;
+    }
+    Vấn đề:
+        Khi value đổi → localValue không đổi
+        Child tự tạo nguồn dữ liệu riêng
+    Sửa lại:
+        function Child({ value }) {
+            return <p>{value}</p>;
+        }
+Ví dụ 3: Redux bị phá SSOT
+    const list = useSelector(selectList);
+    const [localList, setLocalList] = useState(list);
+    Vấn đề
+        Redux không còn là nguồn chuẩn
+        state bị nhân bản
+    Sửa:    
+        - const list = useSelector(selectList); const total = list.length;
+        - const total = useSelector(state => state.list.length);
+

@@ -1,0 +1,53 @@
+// =============================DAY 1 – PROPS vs STATE===============================
+I.Tư duy cốt lõi cần nhớ
+    1.UI = f(state) - (1 dữ liệu → 1 nơi quyết định) 
+        - là một nguyên tắc thiết kế giao diện (UI) phổ biến, nghĩa là Giao diện người dùng (UI) là một hàm của trạng thái (State)
+        - có nghĩa là giao diện mà người dùng thấy luôn phụ thuộc vào dữ liệu hoặc trạng thái hiện tại của ứng dụng 
+            (ví dụ: đang tải, có lỗi, trống, dữ liệu đầy đủ). 
+        - UI (User Interface - Giao diện người dùng): Những gì người dùng nhìn thấy và tương tác (nút, văn bản, hình ảnh, bố cục).
+        - f (Function - Hàm số): Logic hoặc quy tắc xác định cách chuyển đổi trạng thái thành UI.
+        - State (Trạng thái): Dữ liệu hoặc thông tin hiện tại của ứng dụng (ví dụ: user_is_logged_in, data_is_loading, error_message).
+        - Ví dụ:
+            Nếu state là isLoading, UI sẽ hiển thị spinner/thanh tiến trình.
+            Nếu state là data_available, UI sẽ hiển thị danh sách sản phẩm.
+            Nếu state là error, UI sẽ hiển thị thông báo lỗi. 
+    2. Single Source of Truth( Không giữ cùng 1 data ở nhiều nơi, Tránh copy props → state )
+        - Sai (vi phạm SSOT)
+            const [user, setUser] = useState({ name: 'A' });
+            const [userName, setUserName] = useState('A');
+            👉 user.name và userName cùng biểu diễn 1 thông tin
+            👉 Khi update, rất dễ lệch dữ liệu
+            setUser({ name: 'B' });
+            // quên setUserName('B') ❌
+        - Đúng (Single Source of Truth)
+            const [user, setUser] = useState({ name: 'A' });
+            const userName = user.name; // derive
+            ✔️ user là nguồn chuẩn duy nhất
+            ✔️ userName chỉ là dữ liệu dẫn xuất
+        - Tránh copy props → state
+            ❌ Sai
+                function Child({ value }) {
+                const [localValue, setLocalValue] = useState(value);
+                }
+                👉 value thay đổi → localValue không tự cập nhật
+                👉 Tạo ra 2 nguồn dữ liệu cho cùng 1 giá trị
+            ✅ Đúng – dùng props trực tiếp
+                function Child({ value }) {
+                return <span>{value}</span>;
+                }
+                ✔️ Parent giữ state
+                ✔️ Child chỉ render → đúng SSOT
+        - Khi nào mới nên copy props → state?
+            Chỉ khi: Cần chỉnh sửa tạm thời (form, draft), Không muốn ảnh hưởng ngay tới parent. 
+                function EditForm({ initialName, onSave }) {
+                    const [name, setName] = useState(initialName);
+
+                    return (
+                        <input
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        />
+                    );
+                }
+
+
